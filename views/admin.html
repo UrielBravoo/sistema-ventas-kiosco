@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administrador - Centro de Control Global</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: #020617; color: #f8fafc; padding: 1.5rem; }
+        .grid-layout { display: grid; grid-template-columns: 320px 1fr; gap: 1.5rem; max-width: 1600px; margin: 0 auto; }
+        
+        /* Estilos Paneles */
+        header { grid-column: span 2; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1e293b; padding-bottom: 1rem; }
+        h1 { color: #f43f5e; font-size: 1.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 12px; padding: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.5); margin-bottom: 1.5rem; }
+        h2 { font-size: 1.1rem; color: #38bdf8; margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.5px; border-left: 4px solid #38bdf8; padding-left: 8px; }
+        
+        /* Lista Clientes */
+        .user-item { padding: 0.75rem; border-radius: 8px; background: #1e293b; margin-bottom: 0.5rem; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; display: flex; justify-content: space-between; align-items: center; }
+        .user-item:hover { background: #334155; border-color: #38bdf8; }
+        .user-item.active { background: #f43f5e; color: #fff; }
+        .user-item.active span { color: #f8fafc !important; }
+        .btn-baja { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1rem; padding: 0.2rem 0.4rem; border-radius: 4px; transition: all 0.2s; }
+        .btn-baja:hover { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        /* Formulario Estilizado */
+        .form-group { margin-bottom: 0.8rem; }
+        .form-group label { display: block; font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.3rem; text-transform: uppercase; }
+        .form-input { width: 100%; background: #040815; border: 1px solid #1e293b; border-radius: 6px; padding: 0.5rem; color: #fff; font-size: 0.85rem; outline: none; transition: border-color 0.2s; }
+        .form-input:focus { border-color: #38bdf8; }
+        .btn-submit { width: 100%; background: #10b981; color: white; border: none; border-radius: 6px; padding: 0.6rem; font-weight: bold; cursor: pointer; font-size: 0.85rem; transition: background 0.2s; margin-top: 0.5rem; }
+        .btn-submit:hover { background: #059669; }
+
+        /* Tablas y Listas */
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th { background: #1e293b; padding: 0.5rem 0.75rem; color: #94a3b8; font-size: 0.8rem; text-transform: uppercase; }
+        td { padding: 0.75rem; border-bottom: 1px solid #1e293b; font-size: 0.9rem; }
+        
+        /* Monitor Global */
+        .live-badge { background: #ef4444; color: white; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: bold; animation: pulse 1.5s infinite; }
+        .stream-box { max-height: 250px; overflow-y: auto; background: #040815; border-radius: 8px; padding: 0.5rem; font-family: monospace; }
+        .stream-line { padding: 0.4rem; border-bottom: 1px solid #0f172a; font-size: 0.85rem; display: flex; justify-content: space-between; }
+        
+        /* Kpis */
+        .kpi-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem; }
+        .kpi { background: #1e293b; padding: 1rem; border-radius: 8px; text-align: center; }
+        .kpi-val { font-size: 1.5rem; font-weight: bold; color: #10b981; }
+
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+    </style>
+
+    <!-- 🛡️ ESCUDO DE CIBERDEFENSA (Corregido para cookies HttpOnly de forma segura) -->
+    <script>
+        (function() {
+            const userRole = localStorage.getItem('userRole'); 
+
+            // Como la cookie es HttpOnly, JavaScript NO puede leerla en el navegador.
+            // Confiamos en el rol de localStorage para la validación visual rápida.
+            // La seguridad estricta y real la ejecutan las peticiones fetch con el servidor.
+            if (userRole !== 'admin') {
+                // Bloqueamos instantáneamente la visualización de la página
+                document.documentElement.style.display = 'none';
+                alert("⚠️ Acceso denegado. No tenés permisos de administrador.");
+                window.location.href = '/login.html';
+            }
+        })();
+    </script>
+</head>
+<body>
+
+    <div class="grid-layout">
+        <header>
+            <div>
+                <h1>ADMINISTRADOR DE USUARIOS DE KIOSCOS</h1>
+                <p style="color: #64748b;">Control Analítico y Auditoría Segundo a Segundo</p>
+            </div>
+            <button onclick="cerrarSesion()" style="background: #ef4444; color: white; padding: 0.5rem 1.2rem; border-radius: 6px; border: none; font-weight: 600; cursor: pointer; transition: background 0.2s;">
+                Cerrar Sesión 🚪
+            </button>
+        </header>
+
+        <!-- COLUMNA IZQUIERDA: PERSONAL DEL SISTEMA -->
+        <aside>
+            <!-- LISTADO -->
+            <div class="card">
+                <h2>Negocios / Usuarios</h2>
+                <div id="listaUsuarios">
+                    <!-- Cargados por JS -->
+                </div>
+            </div>
+
+            <!-- FORMULARIO DE REGISTRO INTEGRADO -->
+            <div class="card" style="border-color: #10b981;">
+                <h2>Registrar Empleado</h2>
+                <form id="form-crear-usuario" style="margin-top: 0.8rem;">
+                    <div class="form-group">
+                        <label>Nombre Completo</label>
+                        <input type="text" id="user-nombre" class="form-input" placeholder="Ej: Uriel Bravo" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre de Usuario</label>
+                        <input type="text" id="user-username" class="form-input" placeholder="Ej: uriel_admin" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Contraseña</label>
+                        <input type="password" id="user-password" class="form-input" placeholder="••••••••" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Rol del Sistema</label>
+                        <select id="user-role" class="form-input" style="height: 34px;">
+                            <option value="cajero">Cajero / Empleado</option>
+                            <option value="admin">Administrador</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-submit">💾 Guardar Usuario</button>
+                </form>
+            </div>
+        </aside>
+
+        <!-- COLUMNA DERECHA: MONITORES EN TIEMPO REAL -->
+        <main>
+            <!-- RECUADRO APARTE GENERAL: SEGUNDO A SEGUNDO TODO EL SERVER -->
+            <div class="card" style="border-color: #ef4444;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h2>Monitor Global del Servidor (Toda la Red)</h2>
+                    <span class="live-badge">LIVE SEGUNDO A SEGUNDO</span>
+                </div>
+                <div class="stream-box" id="monitorGlobal">
+                    <!-- Flujo constante de datos de todo el server -->
+                </div>
+            </div>
+
+            <!-- DESPACHO ESPECIFICO DEL CLIENTE SELECCIONADO -->
+            <div class="card" id="panelEspecifico" style="display: none;">
+                <h2 id="tituloCliente">Estadísticas de: [Seleccioná un cliente]</h2>
+                
+                <!-- KPIs de salud del negocio -->
+                <div class="kpi-container">
+                    <div class="kpi">
+                        <div style="color: #94a3b8; font-size: 0.85rem;">Facturación de Hoy</div>
+                        <div class="kpi-val" id="kpiVentas">$0.00</div>
+                    </div>
+                    <div class="kpi">
+                        <div style="color: #94a3b8; font-size: 0.85rem;">Transacciones Realizadas</div>
+                        <div class="kpi-val" id="kpiCant" style="color: #38bdf8;">0</div>
+                    </div>
+                    <div class="kpi">
+                        <div style="color: #94a3b8; font-size: 0.85rem;">Ticket Promedio</div>
+                        <div class="kpi-val" id="kpiProm" style="color: #a855f7;">$0.00</div>
+                    </div>
+                </div>
+
+                <h3>Actividad del Día (Ítem por Ítem y Horario)</h3>
+                <table style="margin-top: 0.5rem;">
+                    <thead>
+                        <tr>
+                            <th>Hora</th>
+                            <th>Artículo</th>
+                            <th>Cant.</th>
+                            <th>Subtotal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaItemsCliente">
+                        <!-- Items específicos de este negocio -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+    let usuarioSeleccionado = null;
+
+    async function inicializar() {
+        await cargarUsuarios();
+        await streamTiempoReal();
+        setInterval(streamTiempoReal, 3000); // Polling cada 3 segundos
+    }
+
+    // Carga la lista de usuarios
+    async function cargarUsuarios() {
+        try {
+            const res = await fetch('/api/admin/usuarios');
+            
+            if (res.status === 401 || res.status === 403) {
+                alert("Sesión expirada o sin permisos.");
+                cerrarSesion();
+                return;
+            }
+            if (!res.ok) throw new Error("No se pudieron obtener los usuarios");
+            
+            const usuarios = await res.json();
+            const div = document.getElementById('listaUsuarios');
+            if (!div) return;
+            
+            const htmlUsuarios = [];
+            usuarios.forEach(u => {
+                const esAdmin = u.role === 'admin';
+                htmlUsuarios.push(`
+                    <div class="user-item" id="user-${u.username}" onclick="if(event.target.tagName !== 'BUTTON') seleccionarUsuario('${u.username}')">
+                        <div>
+                            <strong>${u.username}</strong> <br>
+                            <span style="font-size:0.75rem; color:#94a3b8;">Rol: ${u.role}</span>
+                        </div>
+                        ${esAdmin ? '' : `<button class="btn-baja" title="Dar de baja usuario" onclick="eliminarUsuario(${u.id}, '${u.username}')">🗑️</button>`}
+                    </div>
+                `);
+            });
+            div.innerHTML = htmlUsuarios.join('');
+
+            if (usuarioSeleccionado) {
+                document.getElementById(`user-${usuarioSeleccionado}`)?.classList.add('active');
+            }
+        } catch (err) {
+            console.error("Error al cargar usuarios:", err);
+        }
+    }
+
+    function seleccionarUsuario(username) {
+        if(usuarioSeleccionado) {
+            document.getElementById(`user-${usuarioSeleccionado}`)?.classList.remove('active');
+        }
+        usuarioSeleccionado = username;
+        
+        const elementoNuevo = document.getElementById(`user-${username}`);
+        if(elementoNuevo) elementoNuevo.classList.add('active');
+        
+        document.getElementById('panelEspecifico').style.display = 'block';
+        document.getElementById('tituloCliente').textContent = `Auditoría Específica: ${username.toUpperCase()}`;
+        streamTiempoReal(); 
+    }
+
+    // Guardar nuevo usuario
+    document.getElementById('form-crear-usuario').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const nombre = document.getElementById('user-nombre').value;
+        const username = document.getElementById('user-username').value;
+        const password = document.getElementById('user-password').value;
+        const role = document.getElementById('user-role').value;
+
+        try {
+            const res = await fetch('/api/admin/usuarios', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nombre, username, password, role })
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'No se pudo crear el usuario');
+
+            alert(`¡Usuario @${username} registrado con éxito!`);
+            document.getElementById('form-crear-usuario').reset();
+            await cargarUsuarios();
+        } catch (err) {
+            alert('Error al registrar: ' + err.message);
+        }
+    });
+
+    // Eliminar usuario
+    async function eliminarUsuario(id, username) {
+        event.stopPropagation();
+        if (!confirm(`¿Estás completamente seguro de borrar permanentemente al usuario @${username}?`)) return;
+
+        try {
+            const res = await fetch(`/api/admin/usuarios/${id}`, {
+                method: 'DELETE'
+            });
+
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'No se pudo eliminar');
+
+            alert(data.mensaje || 'Usuario eliminado correctamente');
+            
+            if (usuarioSeleccionado === username) {
+                usuarioSeleccionado = null;
+                document.getElementById('panelEspecifico').style.display = 'none';
+            }
+            
+            await cargarUsuarios();
+        } catch (err) {
+            alert('Error al eliminar: ' + err.message);
+        }
+    }
+
+    // Polling unificado en tiempo real
+    async function streamTiempoReal() {
+        try {
+            // 1. Cargar Monitor Global
+            const resGlobal = await fetch('/api/admin/ventas-globales');
+            
+            if (resGlobal.ok) {
+                const ventasGlobales = await resGlobal.json();
+                const monitor = document.getElementById('monitorGlobal');
+                if (monitor && Array.isArray(ventasGlobales)) {
+                    if(ventasGlobales.length === 0) {
+                        monitor.innerHTML = `<div class="stream-line" style="color: #64748b;">No hay actividad registrada el día de hoy.</div>`;
+                    } else {
+                        const htmlGlobal = ventasGlobales.map(v => {
+                            const rawFecha = v.fecha || v.createdAt;
+                            const hora = rawFecha && !isNaN(Date.parse(rawFecha)) 
+                                ? new Date(rawFecha).toLocaleTimeString('es-AR') 
+                                : '--:--';
+
+                            const totalVenta = typeof v.total === 'number' ? v.total : parseFloat(v.total || 0);
+                            return `
+                                <div class="stream-line">
+                                    <span>[${hora}] <b style="color:#f43f5e;">@${v.usuario}</b> vendió un total de:</span>
+                                    <span style="color:#10b981; font-weight:bold;">$${totalVenta.toFixed(2)}</span>
+                                </div>
+                            `;
+                        });
+                        monitor.innerHTML = htmlGlobal.join('');
+                    }
+                }
+            }
+
+            // 2. Cargar datos del usuario seleccionado
+            if (usuarioSeleccionado) {
+                const resCliente = await fetch(`/api/admin/ventas/${usuarioSeleccionado}`);
+                
+                if (resCliente.ok) {
+                    const data = await resCliente.json();
+                    
+                    const facturado = data.totalFacturado ? parseFloat(data.totalFacturado) : 0;
+                    const transacciones = data.totalTransacciones ? parseInt(data.totalTransacciones) : 0;
+                    const promedio = data.ticketPromedio ? parseFloat(data.ticketPromedio) : 0;
+
+                    document.getElementById('kpiVentas').textContent = `$${facturado.toFixed(2)}`;
+                    document.getElementById('kpiCant').textContent = transacciones;
+                    document.getElementById('kpiProm').textContent = `$${promedio.toFixed(2)}`;
+
+                    const tbody = document.getElementById('tablaItemsCliente');
+                    if (tbody && Array.isArray(data.items)) {
+                        if (data.items.length === 0) {
+                            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#64748b;">Sin artículos vendidos hoy.</td></tr>`;
+                        } else {
+                            const htmlItems = data.items.map(item => {
+                                const rawHora = item.hora || item.createdAt;
+                                const horaItem = rawHora && !isNaN(Date.parse(rawHora)) 
+                                    ? new Date(rawHora).toLocaleTimeString('es-AR') 
+                                    : '--:--';
+
+                                const subtotalItem = typeof item.subtotal === 'number' ? item.subtotal : parseFloat(item.subtotal || 0);
+                                return `
+                                    <tr>
+                                        <td>${horaItem}</td>
+                                        <td><strong>${item.producto || 'Artículo Sin Nombre'}</strong></td>
+                                        <td>${item.cantidad || 0}</td>
+                                        <td style="color:#10b981; font-weight:bold;">$${subtotalItem.toFixed(2)}</td>
+                                    </tr>
+                                `;
+                            });
+                            tbody.innerHTML = htmlItems.join('');
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            console.error("Error en streaming analítico:", err);
+        }
+    }
+
+    // Cierre de sesión
+    function cerrarSesion() {
+        localStorage.clear();
+        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        window.location.href = '/login.html';
+    }
+
+    window.onload = inicializar;
+</script>
+</body>
+</html>

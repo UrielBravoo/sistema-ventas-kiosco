@@ -1,0 +1,52 @@
+### 1. AGREGAR UN ALFAJOR
+POST http://localhost:3000/api/productos
+Content-Type: application/json
+
+{
+    "nombre": "Alfajor Marley",
+    "precio": 1200,
+    "stock": 50
+}
+
+###
+
+### 2. VER TODOS LOS PRODUCTOS
+GET http://localhost:3000/api/productos
+
+
+
+
+
+###
+
+### 3. SIMULAR UNA VENTA (Vender 2 Alfajores Marley del Producto ID: 1)
+POST http://localhost:3000/api/ventas
+Content-Type: application/json
+
+{
+    "productoId": 1,
+    "cantidad": 2
+}
+
+###
+
+### 4. VER HISTORIAL Y ESTADÍSTICAS DE VENTAS
+GET http://localhost:3000/api/ventas
+
+
+
+###
+
+### 5. LLEGÓ EL PROVEEDOR (Aumentar precio a 1500 y sumar 20 unidades al stock del Producto ID: 1)
+PUT http://localhost:3000/api/productos/1
+Content-Type: application/json
+
+{
+    "precio": 1500,
+    "stock": 20
+}
+
+###
+
+### 6. VER ESTADÍSTICAS DE GANANCIAS DIARIAS Y CONTROL DE CAJA
+GET http://localhost:3000/api/ventas/estadisticas

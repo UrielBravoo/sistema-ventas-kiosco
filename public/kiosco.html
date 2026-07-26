@@ -287,20 +287,31 @@
         let bloqueandoVenta = false;
 
         window.addEventListener('DOMContentLoaded', () => {
-            const rol = localStorage.getItem('userRole');
-            if (rol === 'admin') {
-                alert('Acceso restringido: Los administradores deben operar desde el panel de control.');
-                window.location.href = '/admin.html';
-                return;
-            }
+    // 1. Verificamos token de autenticación
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/login.html';
+        return;
+    }
 
-            const nombreUsuario = localStorage.getItem('username') || 'Usuario';
-            document.getElementById('saludoUsuario').textContent = `Hola, @${nombreUsuario} 👤`;
+    // 2. Leemos rol y nombre guardados en localStorage
+    const rol = localStorage.getItem('userRole');
+    if (rol === 'admin') {
+        alert('Acceso restringido: Los administradores deben operar desde el panel de control.');
+        window.location.href = '/admin.html';
+        return;
+    }
 
-            actualizarTodo();
-            configurarBuscadorEinteligente();
-            configurarAtajosTeclado();
-        });
+    const nombreUsuario = localStorage.getItem('username') || 'Cajero';
+    const saludoEl = document.getElementById('saludoUsuario');
+    if (saludoEl) {
+        saludoEl.textContent = `Hola, @${nombreUsuario} 👤`;
+    }
+
+    actualizarTodo();
+    configurarBuscadorEinteligente();
+    configurarAtajosTeclado();
+});
 
         function configurarAtajosTeclado() {
             window.addEventListener('keydown', (e) => {

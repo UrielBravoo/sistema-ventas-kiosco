@@ -48,23 +48,6 @@
 
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
     </style>
-
-    <!-- 🛡️ ESCUDO DE CIBERDEFENSA (Corregido para cookies HttpOnly de forma segura) -->
-    <script>
-        (function() {
-            const userRole = localStorage.getItem('userRole'); 
-
-            // Como la cookie es HttpOnly, JavaScript NO puede leerla en el navegador.
-            // Confiamos en el rol de localStorage para la validación visual rápida.
-            // La seguridad estricta y real la ejecutan las peticiones fetch con el servidor.
-            if (userRole !== 'admin') {
-                // Bloqueamos instantáneamente la visualización de la página
-                document.documentElement.style.display = 'none';
-                alert("⚠️ Acceso denegado. No tenés permisos de administrador.");
-                window.location.href = '/login.html';
-            }
-        })();
-    </script>
 </head>
 <body>
 
@@ -119,7 +102,7 @@
 
         <!-- COLUMNA DERECHA: MONITORES EN TIEMPO REAL -->
         <main>
-            <!-- RECUADRO APARTE GENERAL: SEGUNDO A SEGUNDO TODO EL SERVER -->
+            <!-- RECUADRO MONITOREO GLOBAL -->
             <div class="card" style="border-color: #ef4444;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                     <h2>Monitor Global del Servidor (Toda la Red)</h2>
@@ -130,11 +113,10 @@
                 </div>
             </div>
 
-            <!-- DESPACHO ESPECIFICO DEL CLIENTE SELECCIONADO -->
+            <!-- DESPACHO ESPECÍFICO DEL CLIENTE SELECCIONADO -->
             <div class="card" id="panelEspecifico" style="display: none;">
                 <h2 id="tituloCliente">Estadísticas de: [Seleccioná un cliente]</h2>
                 
-                <!-- KPIs de salud del negocio -->
                 <div class="kpi-container">
                     <div class="kpi">
                         <div style="color: #94a3b8; font-size: 0.85rem;">Facturación de Hoy</div>
@@ -161,7 +143,7 @@
                         </tr>
                     </thead>
                     <tbody id="tablaItemsCliente">
-                        <!-- Items específicos de este negocio -->
+                        <!-- Items específicos -->
                     </tbody>
                 </table>
             </div>
@@ -171,16 +153,31 @@
     <script>
     let usuarioSeleccionado = null;
 
+    // Obtener headers con autenticación
+    function getHeaders() {
+        const token = localStorage.getItem('token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        return headers;
+    }
+
     async function inicializar() {
+        const userRole = localStorage.getItem('userRole');
+        if (userRole !== 'admin') {
+            alert("⚠️ Acceso denegado. No tenés permisos de administrador.");
+            cerrarSesion();
+            return;
+        }
+
         await cargarUsuarios();
         await streamTiempoReal();
-        setInterval(streamTiempoReal, 3000); // Polling cada 3 segundos
+        setInterval(streamTiempoReal, 3000);
     }
 
     // Carga la lista de usuarios
     async function cargarUsuarios() {
         try {
-            const res = await fetch('/api/admin/usuarios');
+            const res = await fetch('/api/admin/usuarios', { headers: getHeaders() });
             
             if (res.status === 401 || res.status === 403) {
                 alert("Sesión expirada o sin permisos.");
@@ -202,7 +199,7 @@
                             <strong>${u.username}</strong> <br>
                             <span style="font-size:0.75rem; color:#94a3b8;">Rol: ${u.role}</span>
                         </div>
-                        ${esAdmin ? '' : `<button class="btn-baja" title="Dar de baja usuario" onclick="eliminarUsuario(${u.id}, '${u.username}')">🗑️</button>`}
+                        ${esAdmin ? '' : `<button class="btn-baja" title="Dar de baja usuario" onclick="eliminarUsuario(${u.id}, '${u.username}', event)">🗑️</button>`}
                     </div>
                 `);
             });
@@ -242,7 +239,7 @@
         try {
             const res = await fetch('/api/admin/usuarios', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: getHeaders(),
                 body: JSON.stringify({ nombre, username, password, role })
             });
 
@@ -258,13 +255,14 @@
     });
 
     // Eliminar usuario
-    async function eliminarUsuario(id, username) {
-        event.stopPropagation();
+    async function eliminarUsuario(id, username, event) {
+        if (event) event.stopPropagation();
         if (!confirm(`¿Estás completamente seguro de borrar permanentemente al usuario @${username}?`)) return;
 
         try {
             const res = await fetch(`/api/admin/usuarios/${id}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: getHeaders()
             });
 
             const data = await res.json();
@@ -283,11 +281,10 @@
         }
     }
 
-    // Polling unificado en tiempo real
+    // Polling en tiempo real
     async function streamTiempoReal() {
         try {
-            // 1. Cargar Monitor Global
-            const resGlobal = await fetch('/api/admin/ventas-globales');
+            const resGlobal = await fetch('/api/admin/ventas-globales', { headers: getHeaders() });
             
             if (resGlobal.ok) {
                 const ventasGlobales = await resGlobal.json();
@@ -315,9 +312,8 @@
                 }
             }
 
-            // 2. Cargar datos del usuario seleccionado
             if (usuarioSeleccionado) {
-                const resCliente = await fetch(`/api/admin/ventas/${usuarioSeleccionado}`);
+                const resCliente = await fetch(`/api/admin/ventas/${usuarioSeleccionado}`, { headers: getHeaders() });
                 
                 if (resCliente.ok) {
                     const data = await resCliente.json();
@@ -364,7 +360,6 @@
     // Cierre de sesión
     function cerrarSesion() {
         localStorage.clear();
-        document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
         window.location.href = '/login.html';
     }
 

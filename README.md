@@ -279,3 +279,51 @@ mi-app-kiosco
 # 📄 Licencia
 
 Este proyecto fue desarrollado con fines educativos y de aprendizaje. Podés modificarlo y adaptarlo libremente según tus necesidades.
+
+# Guia de uso: iniciar programa con el comando  "node index.js" y entrar a localhost:3000
+<img width="1301" height="953" alt="image" src="https://github.com/user-attachments/assets/1c321287-f329-4760-a0d3-1a582bc6ac09" />
+
+# Ingreso al Panel de Admin y creacion del usuario richard
+
+<img width="1914" height="858" alt="image" src="https://github.com/user-attachments/assets/119a75a7-1cd5-4796-b4c5-34490ad6a416" />
+
+#Interfaz de usuario donde se puede hacer ventas solo utilizando el teclado
+
+<img width="1915" height="853" alt="image" src="https://github.com/user-attachments/assets/c0e65bf8-905f-44f5-9d22-78cea5388d8a" />
+
+# Carga de unidades que ingresen al stock donde podemos cambiar el nombre si asi deseamos agregamos el precio costo y nuevo precio venta con la cantidad de stock
+
+<img width="1917" height="853" alt="image" src="https://github.com/user-attachments/assets/914442a0-9094-49b5-94c0-da53664d102e" />
+
+# Creacion del producto 
+<img width="1903" height="844" alt="image" src="https://github.com/user-attachments/assets/c6d1b270-a04a-4fb4-ac78-a653503d210c" />
+
+# Historial de ventas
+
+<img width="1913" height="856" alt="image" src="https://github.com/user-attachments/assets/55dab671-da29-4e4f-bef5-e618b6ffe601" />
+
+# Resumen Diario
+<img width="818" height="235" alt="image" src="https://github.com/user-attachments/assets/44769dad-9c08-4971-ad54-d574611b4f60" />
+
+# Historial por dias 
+<img width="816" height="275" alt="image" src="https://github.com/user-attachments/assets/2632b316-0a76-48bf-b7a4-db94ddb71936" />
+
+# Cuadro de productos mas vendidos
+<img width="805" height="466" alt="image" src="https://github.com/user-attachments/assets/fd1c1fe1-0cd6-4d71-8af9-63afef811838" />
+
+# Cuadro que indica el stock actual,costo,venta, y si queda poco stock
+
+<img width="1907" height="761" alt="image" src="https://github.com/user-attachments/assets/cb250ac6-c2f0-4b47-82c4-a05cc2371e9f" />
+
+
+
+
+
+
+
+
+
+
+
+
+
